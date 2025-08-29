@@ -13,6 +13,7 @@ go run main.go
 
 ## TODO
 
+- [ ] Full Controls component pipeline
 - [ ] Dynmaic atmosphere model
 - [ ] CLI demo playground
 - [ ] WASM Compilation

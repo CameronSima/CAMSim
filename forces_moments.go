@@ -500,9 +500,16 @@ func (calc *ForcesMomentsCalculator) PerformAerodynamicAnalysis(baseState *Aircr
 		alpha := alphaStart + float64(i)*(alphaEnd-alphaStart)/float64(steps-1)
 		analysis.AlphaRange[i] = alpha
 		
-		// Create state at this alpha
+		// Create state at this alpha by adjusting velocity vector
 		testState := baseState.Copy()
-		testState.Alpha = alpha
+		
+		// Calculate velocity components for desired alpha
+		// alpha = atan(w / u) where w is vertical velocity (positive up)
+		speed := testState.Velocity.Magnitude()
+		u := speed * math.Cos(alpha)  // Forward velocity
+		w := speed * math.Sin(alpha)  // Vertical velocity (positive up)
+		
+		testState.Velocity = Vector3{X: u, Y: testState.Velocity.Y, Z: -w} // NED: Z down
 		testState.UpdateDerivedParameters()
 		
 		// Calculate forces

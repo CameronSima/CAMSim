@@ -124,4 +124,16 @@ func main() {
     
     fmt.Println("\n" + strings.Repeat("=", 60))
     DemoQuaternionVsEuler()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    FlightDynamicsDemo()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    StallDemo()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    DemoFlightControlSystem()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    DemoRealisticVsDirectControl()
 }
