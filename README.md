@@ -2,7 +2,7 @@
 
 ## Features
 
-Parses JSBSim XML format
+Parses JSBSim XML format specification: https://jsbsim.sourceforge.net/JSBSim_Config_File_Format_v2.0.pdf
 Full support for JSBSim XML format
 
 ## Usage
@@ -13,6 +13,8 @@ go run main.go
 
 ## TODO
 
+- [ ] Dynmaic atmosphere model
+- [ ] CLI demo playground
 - [ ] WASM Compilation
 - [ ] JavaScript API
 
