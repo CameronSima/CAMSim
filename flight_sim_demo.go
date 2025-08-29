@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -91,9 +92,13 @@ func FlightSimulatorDemo() {
 		Gear:     false, // Gear up
 	}
 	
-	state.ApplyControlInputs(controls)
+	// For demo purposes, we need to use FCS integration to get realistic control surface positions
+	// Create a temporary FCS engine for demonstration
+	demoConfig, _ := ParseJSBSimConfig(strings.NewReader("<fdm_config/>")) // Minimal config for demo
+	fcsEngine, _ := NewFlightDynamicsEngineWithFCS(demoConfig, false)
+	fcsEngine.SetControlInputsOnState(state, controls)
 	
-	fmt.Printf("   Pilot Inputs → Surface Positions:\n")
+	fmt.Printf("   Pilot Inputs → FCS-Processed Surface Positions:\n")
 	fmt.Printf("   Aileron: %.1f%% → L: %.1f°, R: %.1f°\n",
 		controls.Aileron*100,
 		state.ControlSurfaces.AileronLeft*RAD_TO_DEG,
@@ -175,7 +180,7 @@ func FlightSimulatorDemo() {
 			controls.Rudder = 0.0
 		}
 		
-		state.ApplyControlInputs(controls)
+		state.SetControlInputs(controls)
 		
 		// Simple physics simulation (very basic for demo)
 		// In a real sim, this would use proper integration and forces/moments
@@ -258,7 +263,7 @@ func DemoStateOperations() {
 		{"Atmosphere Update", func(s *AircraftState) { s.UpdateAtmosphere() }},
 		{"Derived Parameters", func(s *AircraftState) { s.UpdateDerivedParameters() }},
 		{"Property Map", func(s *AircraftState) { _ = s.ToPropertyMap() }},
-		{"Control Input", func(s *AircraftState) { s.ApplyControlInputs(NewControlInputs()) }},
+		{"Control Input", func(s *AircraftState) { s.SetControlInputs(NewControlInputs()) }},
 		{"State Copy", func(s *AircraftState) { _ = s.Copy() }},
 	}
 	

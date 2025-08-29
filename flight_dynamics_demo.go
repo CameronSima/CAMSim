@@ -372,8 +372,8 @@ func FlightDynamicsDemo() {
 		fmt.Printf("\n🎯 %s (%s)\n", scenario.name, scenario.description)
 		fmt.Printf("   Duration: %.1f seconds\n", scenario.duration)
 		
-		// Apply control inputs
-		state.ApplyControlInputs(scenario.controls)
+		// Apply control inputs (just store them, FCS will process during simulation)
+		state.SetControlInputs(scenario.controls)
 		
 		// Record initial conditions
 		initialAlt := state.Altitude

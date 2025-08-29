@@ -46,20 +46,17 @@ func (engine *FlightDynamicsEngineWithFCS) RunSimulationStepWithFCS(
 	// 1. Process pilot inputs through flight control system
 	engine.FCS.Execute(state, dt)
 	
-	// 2. Run the base flight dynamics with FCS-processed control surfaces
-	newState, err := engine.FlightDynamicsEngine.Step(state, dt)
+	// 2. Calculate forces and moments with FCS-processed control surfaces
+	components, err := engine.FlightDynamicsEngine.Calculator.CalculateForcesMoments(state)
 	if err != nil {
 		return nil, nil, err
 	}
 	
-	// Calculate derivatives for compatibility (we don't have them from Step method)
-	derivatives := &StateDerivatives{
-		PositionDot:     Vector3{}, // Would need to calculate from velocity
-		VelocityDot:     Vector3{}, // Would need from forces
-		OrientationDot:  Quaternion{}, // Would need from angular rates
-		AngularRateDot:  Vector3{}, // Would need from moments
-		AltitudeDot:     0.0, // Would calculate from velocity Z
-	}
+	// 3. Calculate state derivatives from forces and moments
+	derivatives := engine.FlightDynamicsEngine.Calculator.CalculateStateDerivatives(state, components)
+	
+	// 4. Integrate to get new state
+	newState := engine.FlightDynamicsEngine.Integrator.Integrate(state, derivatives, dt)
 	
 	return newState, derivatives, nil
 }
@@ -79,8 +76,31 @@ func (engine *FlightDynamicsEngineWithFCS) SetControlInputsOnState(state *Aircra
 	// Update aircraft state controls
 	state.Controls = controls
 	
-	// Also set FCS properties
+	// Set FCS input properties
 	engine.SetControlInputs(controls)
+	
+	// Execute FCS to get processed control surface positions
+	engine.FCS.Execute(state, 0.01) // Use small dt for property updates
+	
+	// Apply FCS-processed control surface positions to aircraft state
+	engine.ApplyFCSOutputsToState(state)
+}
+
+// ApplyFCSOutputsToState applies FCS-computed control surface positions to aircraft state
+func (engine *FlightDynamicsEngineWithFCS) ApplyFCSOutputsToState(state *AircraftState) {
+	// Get FCS-processed control surface outputs (in radians)
+	aileronPos := engine.FCS.Properties.Get("fcs/left-aileron-pos-rad")
+	elevatorPos := engine.FCS.Properties.Get("fcs/elevator-pos-rad")
+	rudderPos := engine.FCS.Properties.Get("fcs/rudder-pos-rad")
+	flapPos := engine.FCS.Properties.Get("fcs/flap-pos-rad")
+	
+	// Apply to aircraft state control surfaces
+	state.ControlSurfaces.AileronLeft = aileronPos
+	state.ControlSurfaces.AileronRight = -aileronPos // Opposite for differential aileron
+	state.ControlSurfaces.Elevator = elevatorPos
+	state.ControlSurfaces.Rudder = rudderPos
+	state.ControlSurfaces.FlapLeft = flapPos
+	state.ControlSurfaces.FlapRight = flapPos
 }
 
 // GetControlSurfacePositions retrieves actual control surface positions from FCS

@@ -318,7 +318,7 @@ func TestControlSurfaceMapping(t *testing.T) {
 			Flaps:    0.25, // Quarter flaps
 		}
 		
-		state.ApplyControlInputs(controls)
+		state.SetControlInputs(controls)
 		
 		// Check aileron mapping (opposite for left/right)
 		if state.ControlSurfaces.AileronLeft <= 0 {
@@ -348,13 +348,13 @@ func TestControlSurfaceMapping(t *testing.T) {
 		
 		// Gear up
 		controls := ControlInputs{Gear: false}
-		state.ApplyControlInputs(controls)
+		state.SetControlInputs(controls)
 		assertEqual(t, state.Gear.Down, false)
 		assertEqual(t, state.Gear.Transition, 0.0)
 		
 		// Gear down
 		controls.Gear = true
-		state.ApplyControlInputs(controls)
+		state.SetControlInputs(controls)
 		assertEqual(t, state.Gear.Down, true)
 		assertEqual(t, state.Gear.Transition, 1.0)
 	})
@@ -395,7 +395,7 @@ func TestPropertyMap(t *testing.T) {
 			Throttle: 0.8,
 			Gear:     true,
 		}
-		state.ApplyControlInputs(controls)
+		state.SetControlInputs(controls)
 		
 		props := state.ToPropertyMap()
 		
@@ -486,12 +486,12 @@ func BenchmarkStateOperations(b *testing.B) {
 		}
 	})
 	
-	b.Run("ApplyControlInputs", func(b *testing.B) {
+	b.Run("SetControlInputs", func(b *testing.B) {
 		state := NewAircraftState()
 		controls := NewControlInputs()
 		for i := 0; i < b.N; i++ {
 			controls.Aileron = float64(i%100) / 100.0 // Vary input
-			state.ApplyControlInputs(controls)
+			state.SetControlInputs(controls)
 		}
 	})
 }

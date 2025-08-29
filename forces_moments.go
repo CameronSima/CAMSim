@@ -133,45 +133,43 @@ func (calc *ForcesMomentsCalculator) calculateAerodynamicForces(state *AircraftS
 		return fmt.Errorf("no aerodynamics configuration")
 	}
 	
-	// Dynamic pressure and reference area
-	qS := state.DynamicPressure * calc.Reference.WingArea
+	// Initialize force totals (JSBSim functions return forces in pounds, not coefficients)
+	var liftForce, dragForce, sideForce float64
 	
-	// Initialize coefficients
-	var CL, CD, CY float64
-	
-	// Evaluate aerodynamic coefficient functions
+	// Evaluate aerodynamic force functions
 	for _, axis := range calc.Config.Aerodynamics.Axis {
 		switch axis.Name {
 		case "LIFT":
 			for _, function := range axis.Function {
-				coeff, err := EvaluateFunction(function, properties)
+				force, err := EvaluateFunction(function, properties)
 				if err == nil {
-					CL += coeff
+					liftForce += force // Force in pounds
 				}
 			}
 			
 		case "DRAG":
 			for _, function := range axis.Function {
-				coeff, err := EvaluateFunction(function, properties)
+				force, err := EvaluateFunction(function, properties)
 				if err == nil {
-					CD += coeff
+					dragForce += force // Force in pounds
 				}
 			}
 			
 		case "SIDE":
 			for _, function := range axis.Function {
-				coeff, err := EvaluateFunction(function, properties)
+				force, err := EvaluateFunction(function, properties)
 				if err == nil {
-					CY += coeff
+					sideForce += force // Force in pounds
 				}
 			}
 		}
 	}
 	
-	// Convert coefficients to forces (body frame)
-	components.Aerodynamic.Lift = -CL * qS  // Negative Z in NED for positive lift
-	components.Aerodynamic.Drag = -CD * qS  // Negative X for drag opposing motion
-	components.Aerodynamic.Side = CY * qS   // Positive Y for right side force
+	// Convert forces from pounds to Newtons and apply to body frame
+	const LB_TO_N = 4.44822
+	components.Aerodynamic.Lift = -liftForce * LB_TO_N  // Negative Z in NED for positive lift
+	components.Aerodynamic.Drag = -dragForce * LB_TO_N  // Negative X for drag opposing motion
+	components.Aerodynamic.Side = sideForce * LB_TO_N   // Positive Y for right side force
 	
 	return nil
 }

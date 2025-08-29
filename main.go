@@ -136,4 +136,7 @@ func main() {
     
     fmt.Println("\n" + strings.Repeat("=", 60))
     DemoRealisticVsDirectControl()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    DemoIntegratedFlightDynamics()
 }

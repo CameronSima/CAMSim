@@ -464,22 +464,13 @@ func (state *AircraftState) ToPropertyMap() map[string]float64 {
 	}
 }
 
-// ApplyControlInputs applies pilot control inputs to the aircraft state
-func (state *AircraftState) ApplyControlInputs(controls ControlInputs) {
+// SetControlInputs updates only the control inputs in the aircraft state
+// For control surface positioning, use FlightDynamicsEngineWithFCS which processes
+// control inputs through the Flight Control System (FCS) with proper dynamics.
+func (state *AircraftState) SetControlInputs(controls ControlInputs) {
 	state.Controls = controls
 	
-	// For now, assume control surfaces respond instantly to commands
-	// In a real implementation, this would include control system dynamics,
-	// surface rate limits, and control authority limits
-	
-	state.ControlSurfaces.AileronLeft = controls.Aileron * 30.0 * DEG_TO_RAD  // ±30° max
-	state.ControlSurfaces.AileronRight = -controls.Aileron * 30.0 * DEG_TO_RAD // Opposite
-	state.ControlSurfaces.Elevator = controls.Elevator * 25.0 * DEG_TO_RAD     // ±25° max
-	state.ControlSurfaces.Rudder = controls.Rudder * 30.0 * DEG_TO_RAD         // ±30° max
-	state.ControlSurfaces.FlapLeft = controls.Flaps * 40.0 * DEG_TO_RAD        // 0-40° max
-	state.ControlSurfaces.FlapRight = controls.Flaps * 40.0 * DEG_TO_RAD
-	
-	// Update gear state
+	// Update gear state (gear is typically not processed through FCS)
 	state.Gear.Down = controls.Gear
 	if controls.Gear {
 		state.Gear.Transition = 1.0

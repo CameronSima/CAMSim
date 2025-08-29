@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 )
@@ -193,8 +194,11 @@ func (pm *PropertyManager) UpdateFromAircraftState(state *AircraftState) {
 	// Velocities and rates
 	pm.Set("velocities/vt-fps", state.Velocity.Magnitude()*3.28084) // m/s to ft/s
 	pm.Set("velocities/vc-kts", state.CalibratedAirspeed*1.94384)   // m/s to kts
-	pm.Set("velocities/alpha-rad", 0.0) // TODO: Calculate angle of attack
-	pm.Set("velocities/beta-rad", 0.0)  // TODO: Calculate sideslip angle
+	// Calculate angle of attack and sideslip angle from velocity components
+	alpha := math.Atan2(state.Velocity.Z, state.Velocity.X) // w/u
+	beta := math.Asin(state.Velocity.Y / state.Velocity.Magnitude()) // v/V_total
+	pm.Set("velocities/alpha-rad", alpha)
+	pm.Set("velocities/beta-rad", beta)
 	
 	// Angular rates
 	pm.Set("velocities/p-rad_sec", state.AngularRate.X)
@@ -203,9 +207,11 @@ func (pm *PropertyManager) UpdateFromAircraftState(state *AircraftState) {
 	
 	// Position and attitude
 	pm.Set("position/h-sl-ft", state.Altitude*3.28084) // m to ft
-	pm.Set("attitude/phi-rad", 0.0)   // TODO: Calculate roll from quaternion
-	pm.Set("attitude/theta-rad", 0.0) // TODO: Calculate pitch from quaternion
-	pm.Set("attitude/psi-rad", 0.0)   // TODO: Calculate yaw from quaternion
+	// Calculate Euler angles from quaternion
+	roll, pitch, yaw := state.Orientation.ToEuler()
+	pm.Set("attitude/phi-rad", roll)     // Roll angle
+	pm.Set("attitude/theta-rad", pitch)  // Pitch angle  
+	pm.Set("attitude/psi-rad", yaw)      // Yaw angle (heading)
 }
 
 // ApplyToAircraftState updates aircraft state from properties
