@@ -1,19 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
-func prettyPrint(v map[string]interface{}) {
-        data, err := json.MarshalIndent(v, "", "  ")
-        if err != nil {
-                fmt.Println("error:", err)
-                return
-        }
-        fmt.Println(string(data))
-}
+
 
 func main() {
     // Open JSBSim XML file
@@ -121,4 +114,14 @@ func main() {
     } else {
         fmt.Printf("No aerodynamics section found\n")
     }
+    
+    // Run the flight simulator demonstration
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    FlightSimulatorDemo()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    DemoStateOperations()
+    
+    fmt.Println("\n" + strings.Repeat("=", 60))
+    DemoQuaternionVsEuler()
 }
